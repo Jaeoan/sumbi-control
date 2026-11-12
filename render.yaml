@@ -1,0 +1,17 @@
+# Render Blueprint: 숨비 관제 서버(클라우드). 이 파일이 저장소 맨 위에 있어야 한다(= demo/live 폴더를 저장소로 올림).
+# AI 요약은 노트북의 rag_worker.py가 만든다(어르신 기록은 클라우드에 두지 않음).
+services:
+  - type: web
+    name: sumbi-control
+    runtime: python
+    region: singapore          # 아시아 유일 지역, 만든 뒤 바꿀 수 없음
+    plan: free                 # 15분 무요청 시 잠듦(재기동 약 1분). 슬립 없는 최저가는 월 $7
+    buildCommand: pip install -r requirements-cloud.txt
+    startCommand: python control.py --rag worker --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: SUMBI_KEY           # 게이트웨이·작업기·앱이 쓰기 요청에 붙이는 키(Render가 생성)
+        generateValue: true
+      # 선택: Expo 푸시 보안 강화를 켠 경우에만 Environment에 EXPO_ACCESS_TOKEN을 직접 추가
