@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>숨비 관제 화면</title>
 <style>
+[hidden]{display:none !important}
 :root{--navy:#13294B;--ink:#1B2433;--sub:#56657A;--line:#D5DDE7;--bg:#EEF2F6;--card:#FFFFFF;
   --p1:#B23A2B;--p2:#D9622B;--p3:#12877A;--wait:#7A8799;--amber:#F2B84B;--teal:#12877A}
 *{box-sizing:border-box}
@@ -75,7 +76,7 @@ footer{max-width:1500px;margin:0 auto 20px;padding:0 16px}
 </header>
 <main>
   <section class="panel" aria-label="실시간 상태">
-    <h2>실시간 상태 <span class="small">(게이트웨이 특징값, 1초마다)</span></h2>
+    <h2>실시간 상태 <span class="small" id="livesrc">(게이트웨이 특징값, 1초마다)</span></h2>
     <div class="who">대상자 R-001 · 김○순(가명), 84세 · 침실 <span class="small">(가상 대상자)</span></div>
     <div class="big"><span class="n" id="bpm">—</span><span class="u" id="bpmu">회/분 호흡</span></div>
     <span class="state" id="state">보정 중</span>
@@ -148,7 +149,9 @@ function onFeatures(f) {
   $("src").textContent = "입력: " + (f.source || "—");
   $("src").className = "pill" + ((f.source || "").includes("시뮬레이션") ? " sim" : " ok");
   $("simbar").hidden = !(f.source || "").includes("시뮬레이션");
-  if (f.rtt_ms != null) $("rtt").textContent = "게이트웨이→관제 " + f.rtt_ms + " ms";
+  const ph = (f.source || "").includes("휴대폰");
+  if (f.rtt_ms != null) $("rtt").textContent = (ph ? "휴대폰→관제 " : "게이트웨이→관제 ") + f.rtt_ms + " ms";
+  $("livesrc").textContent = ph ? "(휴대폰 특징값, 1초마다)" : "(게이트웨이 특징값, 1초마다)";
   const phone = (f.source || "").includes("휴대폰");   // 휴대폰 센서 입력: 호흡 대신 걸음 수·가속도를 보여 준다
   $("bpmu").textContent = phone ? "걸음 (앱 실행 후)" : "회/분 호흡";
   $("wavettl").textContent = phone ? "움직임 파형 (가속도)" : "호흡 파형";
