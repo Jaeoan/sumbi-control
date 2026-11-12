@@ -19,6 +19,7 @@ import argparse
 import asyncio
 import json
 import os
+import secrets
 import sys
 import threading
 import time
@@ -297,6 +298,32 @@ async def devices(req: Request):
         STATE["devices"][d["token"]] = {"platform": d.get("platform"), "at": time.time()}
         return {"ok": True, "devices": len(STATE["devices"])}
     raise HTTPException(400, "token")
+
+
+# 요원 폰 연결: 관제 화면(키 보유)이 6자리 코드를 만들고, 앱이 코드를 내면 키를 받는다.
+# 키를 앱 빌드에 넣지 않기 위한 장치. 코드는 5분 유효·1회용, 5번 틀리면 폐기.
+PAIR = {"code": None, "until": 0.0, "fails": 0}
+
+
+@app.post("/api/pair")
+def pair_new(req: Request):
+    check_key(req)
+    PAIR.update(code=f"{secrets.randbelow(10**6):06d}", until=time.time() + 300, fails=0)
+    return {"code": PAIR["code"], "expires_in": 300}
+
+
+@app.post("/api/pair/claim")
+async def pair_claim(req: Request):
+    d = await req.json()
+    if not PAIR["code"] or time.time() > PAIR["until"]:
+        raise HTTPException(410, "expired")
+    if not secrets.compare_digest(str(d.get("code", "")).strip(), PAIR["code"]):
+        PAIR["fails"] += 1
+        if PAIR["fails"] >= 5:
+            PAIR["code"] = None
+        raise HTTPException(403, "code")
+    PAIR["code"] = None
+    return {"key": KEY}
 
 
 @app.get("/api/pushes")

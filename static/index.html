@@ -70,6 +70,8 @@ footer{max-width:1500px;margin:0 auto 20px;padding:0 16px}
   <span class="pill" id="rag">AI 요약 준비 중</span>
   <span class="pill" id="rtt">전송 —</span>
   <span class="pill" id="conn">연결 중</span>
+  <button class="alt" id="pair" title="요원 앱에 넣을 6자리 코드(5분 유효)">요원 폰 연결</button>
+  <span class="pill" id="paircode" hidden></span>
 </header>
 <main>
   <section class="panel" aria-label="실시간 상태">
@@ -216,6 +218,14 @@ document.addEventListener("click", async (e) => {
   if (!b) return;
   if (b.dataset.s) await fetch("/api/sim", {method: "POST", headers: hdr(), body: b.dataset.s});
   if (b.id === "reset") await fetch("/api/reset", {method: "POST", headers: hdr()});
+  if (b.id === "pair") {
+    const r = await fetch("/api/pair", {method: "POST", headers: hdr()});
+    const pc = $("paircode"); pc.hidden = false;
+    if (!r.ok) { pc.textContent = "키가 없어 코드를 만들 수 없음(주소에 ?key= 필요)"; return; }
+    const d = await r.json();
+    pc.textContent = `앱 연결 코드 ${d.code} (5분)`; pc.className = "pill ok";
+    setTimeout(() => { pc.hidden = true; }, d.expires_in * 1000);
+  }
   if (b.dataset.act) await fetch(`/api/alert/${encodeURIComponent(b.dataset.id)}/${b.dataset.act}`, {method: "POST", headers: hdr(), body: JSON.stringify({who: "관제"})});
 });
 if (new URLSearchParams(location.search).has("snapshot")) {
