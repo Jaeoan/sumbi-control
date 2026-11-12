@@ -113,7 +113,9 @@ def rag_event(a: dict) -> dict:
     return {"id": a["id"], "resident": a["resident"], "time": time.strftime("%H:%M", time.localtime(a["detected_at"])),
             "type": a["kind"], "room": a.get("room", "침실"), "breathing": a.get("breathing", "있음"),
             "response": a.get("response", "확인 생략"), "transcript": a.get("transcript", ""),
-            "same_day_falls": a.get("same_day_falls", 1)}
+            "same_day_falls": a.get("same_day_falls", 1),
+            "confirm_detail": (f"감지 후 {a['confirmed_after']:.0f}초 동안 음성 질문 {a.get('asked', 2)}회, 경과 시간은 이 값을 쓸 것"
+                               if a.get("confirmed_after") is not None else "")}
 
 
 def set_summary(aid: str, r: dict):
@@ -247,6 +249,8 @@ async def event(req: Request):
         a = STATE["alerts"].setdefault(e["id"], {"id": e["id"], "timeline": []})
         a.update({k: v for k, v in e.items() if k not in ("timeline", "label")})
         add_tl(a, e["phase"], e.get("label", ""))
+        if e["phase"] == "confirmed" and a.get("detected_at"):
+            a["confirmed_after"] = round(time.time() - a["detected_at"], 1)   # 진행 기록과 같은 기준
     push_alert(a)
     ph, resp = e["phase"], e.get("response")
     if ph == "detected":

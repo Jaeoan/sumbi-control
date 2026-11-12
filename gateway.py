@@ -146,7 +146,17 @@ class Gateway:
             self.post("/api/event", {**base, "phase": "detected", "priority": "확인 중",
                                      "breathing": "있음" if self.last_feat.get("breathing") else "없음",
                                      "label": "게이트웨이 1차 감지 → 관제에 '확인 중' 표시"})
-            res = confirm(self.a.call_name, self.a.voice, self.listener)
+            asked = []
+
+            def vlog(msg: str):   # 질문할 때마다 관제 진행 기록에 남긴다(무엇을 물었는지 화면에 보이게)
+                print(msg, flush=True)
+                if msg.startswith("[음성] 질문"):
+                    asked.append(msg)
+                    q = msg.split(": ", 1)[-1].split("?")[0] + "?"
+                    self.post("/api/event", {"id": aid, "phase": "asking", "asked": len(asked),
+                                             "label": f"음성 확인 질문 {len(asked)}: “{q}”"})
+
+            res = confirm(self.a.call_name, self.a.voice, self.listener, log=vlog)
             # 넘어지는 순간의 큰 변동이 호흡 계산 구간(20초)에서 빠진 뒤의 값으로 보고한다
             while time.time() - base["detected_at"] < 15:
                 time.sleep(0.5)
