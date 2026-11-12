@@ -30,7 +30,7 @@
 ```
 1. `demo/live` 폴더를 새 GitHub 저장소로 올린다(`render.yaml`이 맨 위에 오도록). 어르신 기록(demo/rag/data)은 올리지 않는다.
 2. Render 대시보드 → New → Blueprint → 저장소 선택 → 배포. Environment에서 생성된 `SUMBI_KEY` 값을 복사.
-3. 노트북: `start_cloud.bat https://<서비스>.onrender.com <SUMBI_KEY>` → 작업기·게이트웨이 실행, 관제 화면이 열린다.
+3. 노트북: `demo/live/.env`(저장소에 올리지 않음)에 `SUMBI_SERVER=https://<서비스>.onrender.com`, `SUMBI_KEY=<값>`을 적고 `start_cloud.bat` (마이크 없이 `start_cloud.bat none`) → 작업기·게이트웨이 실행, 관제 화면이 열린다. `.env` 없이 `start_cloud.bat <주소> <키>`도 된다.
 4. 요원 폰 앱(demo/app/sumbi-app)에 Render 주소와 키 입력.
 5. 무료 요금제는 15분 동안 요청이 없으면 잠들고 깨는 데 약 1분 → 시연 2분 전에 `start_cloud.bat` 실행(게이트웨이가 1초마다 보내므로 시연 중에는 잠들지 않음).
 - 시험(2026-11-12, 이 PC에서 같은 구성): 키 없는 쓰기 401, 작업기 요약 약 7초, Expo 푸시 서버 응답 약 0.23초(가짜 토큰으로 경로만 확인).

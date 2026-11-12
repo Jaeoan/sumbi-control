@@ -116,8 +116,9 @@ let wave = [];
 const done = new Set();
 let offset = 0;   // 서버 시각 - 브라우저 시각(초)
 const qs = new URLSearchParams(location.search);
-try { if (qs.get("key")) localStorage.setItem("sumbiKey", qs.get("key")); } catch (e) {}
-const KEY = qs.get("key") || (() => { try { return localStorage.getItem("sumbiKey") || ""; } catch (e) { return ""; } })();
+const QKEY = (qs.get("key") || "").replace(/ /g, "+");   // 키의 '+'가 주소창에서 공백으로 바뀌는 경우 되돌림
+try { if (QKEY) localStorage.setItem("sumbiKey", QKEY); } catch (e) {}
+const KEY = QKEY || (() => { try { return localStorage.getItem("sumbiKey") || ""; } catch (e) { return ""; } })();
 const hdr = () => Object.assign({"Content-Type": "application/json"}, KEY ? {"x-sumbi-key": KEY} : {});
 const nowS = () => Date.now() / 1000 + offset;
 function a119(a) {

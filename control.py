@@ -45,7 +45,8 @@ RAG = {"mod": None, "index": None, "residents": None}
 
 # ------------------------------------------------------------------ 공통
 def check_key(req: Request):
-    if KEY and req.headers.get("x-sumbi-key") != KEY and req.query_params.get("key") != KEY:
+    q = (req.query_params.get("key") or "").replace(" ", "+")   # 주소창에서 '+'가 공백으로 바뀌는 경우
+    if KEY and req.headers.get("x-sumbi-key") != KEY and q != KEY:
         raise HTTPException(401, "key")
 
 
